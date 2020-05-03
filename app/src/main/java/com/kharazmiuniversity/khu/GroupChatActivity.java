@@ -1,24 +1,29 @@
 package com.kharazmiuniversity.khu;
 
-import android.app.Activity;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.BaseAdapter;
+import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ListView;
-import android.widget.TextView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
-import com.google.gson.JsonIOException;
+import com.google.gson.Gson;
+import com.kharazmiuniversity.khu.data.GroupMessageController;
+import com.kharazmiuniversity.khu.data.KhuAPI;
+import com.kharazmiuniversity.khu.models.GroupMessage;
+import com.kharazmiuniversity.khu.models.RequestGroupMessage;
 
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import okhttp3.OkHttpClient;
@@ -31,8 +36,59 @@ import okio.ByteString;
 public class GroupChatActivity extends AppCompatActivity
 {
 
+    private RecyclerView mMessageRecycler;
+    public GroupMessageAdapter mMessageAdapter;
+    public List<GroupMessage> messageList = new ArrayList<>();
+
+    private ProgressBar progressBar;
+
+
     private WebSocket webSocket;
-    private MessageAdapter messageAdapter;
+
+
+
+
+    KhuAPI.GroupMessageCallback groupMessageCallback = new KhuAPI.GroupMessageCallback() {
+        @Override
+        public void onResponse(List<GroupMessage> groupMessageList , boolean isMessageAvailable)
+        {
+            if (isMessageAvailable)
+            {
+                if (progressBar.isShown())
+                {
+                    progressBar.setVisibility(View.INVISIBLE);
+                }
+
+
+                messageList.clear();
+
+                messageList.addAll(groupMessageList);
+                mMessageAdapter.notifyDataSetChanged();
+            }
+            else
+            {
+                if (progressBar.isShown())
+                {
+                    progressBar.setVisibility(View.INVISIBLE);
+                }
+
+                Toast.makeText(getApplicationContext(),"no message here",Toast.LENGTH_SHORT).show();
+
+            }
+
+
+
+
+        }
+
+        @Override
+        public void onFailure(String cause)
+        {
+
+        }
+    };
+
+
 
 
     @Override
@@ -42,15 +98,52 @@ public class GroupChatActivity extends AppCompatActivity
         webSocket.cancel();
     }
 
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+
+
+        mMessageRecycler = (RecyclerView) findViewById(R.id.reyclerview_message_list);
+        mMessageAdapter = new GroupMessageAdapter(this,messageList);
+        mMessageRecycler.setAdapter(mMessageAdapter);
+        mMessageRecycler.setLayoutManager(new LinearLayoutManager(this));
+
+
+        progressBar.setVisibility(View.VISIBLE);
+
+
+
+
+        GroupMessageController groupMessageController = new GroupMessageController(groupMessageCallback);
+        RequestGroupMessage requestGroupMessage = new RequestGroupMessage();
+
+        requestGroupMessage.setGroupId(GroupAdapter.objectId);
+
+        groupMessageController.start(requestGroupMessage);
+
+
+
+
+    }
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_group_chat);
+        setContentView(R.layout.activity_message_list);
 
 
-        ListView messageList = findViewById(R.id.message_list);
-        final EditText messageBox = findViewById(R.id.message_box);
-        TextView send = findViewById(R.id.send);
+
+        progressBar = findViewById(R.id.in_chat_menu_progress_bar);
+
+
+        //
+
+
+
+        EditText messageBox = (EditText) findViewById(R.id.edittext_chatbox) ;
+        Button sendButton = (Button) findViewById(R.id.button_chatbox_send);
 
 
         instantiateWebsocket();
@@ -68,14 +161,14 @@ public class GroupChatActivity extends AppCompatActivity
         webSocket.send(userConnection.toString());
 
 
-        messageAdapter = new MessageAdapter();
-        messageList.setAdapter(messageAdapter);
-
-        send.setOnClickListener(new View.OnClickListener() {
+        sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v)
             {
                 String message = messageBox.getText().toString();
+                Date cDate = new Date();
+                String fDate = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(cDate);
+
                 JSONObject data = new JSONObject();
 
                 try {
@@ -85,42 +178,50 @@ public class GroupChatActivity extends AppCompatActivity
                     data.put("object_id", GroupAdapter.objectId);
                     data.put("channel_status",false);
                     data.put("group_status",true);
+                    data.put("date",fDate);
+                    data.put("user_name", MyPreferenceManager.getInstance(GroupChatActivity.this).getUser_name());
+
                 }catch (JSONException e)
                 {
                     e.printStackTrace();
                 }
+
 
                 if (!message.isEmpty())
                 {
                     webSocket.send(data.toString());
                     messageBox.setText("");
 
-                    JSONObject jsonObject = new JSONObject();
-                    try
-                    {
-                        jsonObject.put("message",message);
-                        jsonObject.put("byServer",false);
+                    // add sent item to recycler
 
-                        messageAdapter.addItem(jsonObject);
+                    GroupMessage groupMessage = new GroupMessage();
+                    groupMessage.setText(message);
+                    groupMessage.setUsername(MyPreferenceManager.getInstance(GroupChatActivity.this).getUsername());
 
-                    }
-                    catch (JSONException e)
-                    {
-                        e.printStackTrace();
-                    }
+
+                    groupMessage.setDate(fDate);
+
+                    mMessageAdapter.insertSent(groupMessage);
+
 
                 }
 
             }
         });
 
+
+
+
     }
+
+
+
 
     private void instantiateWebsocket()
     {
         OkHttpClient client = new OkHttpClient();
         Request request = new Request.Builder().url("ws://10.0.2.2:8080").build();
-        SocketListener socketListener = new SocketListener(this);
+        GroupChatActivity.SocketListener socketListener = new GroupChatActivity.SocketListener(this);
         webSocket = client.newWebSocket(request,socketListener);
     }
 
@@ -163,22 +264,13 @@ public class GroupChatActivity extends AppCompatActivity
                 @Override
                 public void run()
                 {
-                    JSONObject jsonObject = new JSONObject();
-                    try
-                    {
 
-                        jsonObject.put("message", text);
-                        jsonObject.put("byServer",true);
+                    // add received items to recycler
 
+                    Gson gson = new Gson();
+                    GroupMessage groupMessage = gson.fromJson(text,GroupMessage.class);
 
-                        messageAdapter.addItem(jsonObject);
-
-                    }
-                    catch (JSONException e)
-                    {
-                        e.printStackTrace();
-                    }
-
+                    mMessageAdapter.insertSent(groupMessage);
 
                 }
             });
@@ -201,73 +293,10 @@ public class GroupChatActivity extends AppCompatActivity
     }
 
 
-    public class MessageAdapter extends BaseAdapter
-    {
-
-        List<JSONObject> messagesList = new ArrayList<>();
-
-        @Override
-        public int getCount() {
-            return messagesList.size();
-        }
-
-        @Override
-        public Object getItem(int position) {
-            return messagesList.get(position);
-        }
-
-        @Override
-        public long getItemId(int position) {
-            return position;
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent)
-        {
-            if (convertView == null)
-            {
-                convertView = getLayoutInflater().inflate(R.layout.message_list_item,parent,false );
-            }
 
 
-            TextView sentMessage = convertView.findViewById(R.id.sent_message);
-            TextView recievedMessage = convertView.findViewById(R.id.recieved_message);
-
-            JSONObject item = messagesList.get(position);
-
-            try
-            {
-                if (item.getBoolean("byServer"))
-                {
-                    recievedMessage.setVisibility(View.VISIBLE);
-                    recievedMessage.setText(item.getString("message"));
-                    sentMessage.setVisibility(View.INVISIBLE);
-                }
-                else
-                {
-                    sentMessage.setVisibility(View.VISIBLE);
-                    sentMessage.setText(item.getString("message"));
-                    recievedMessage.setVisibility(View.INVISIBLE);
-                }
-
-            }
-            catch (JSONException e)
-            {
-                e.printStackTrace();
-            }
-
-            return convertView;
-
-        }
-
-        private void addItem (JSONObject item)
-        {
-            messagesList.add(item);
-            notifyDataSetChanged();
-        }
 
 
-    }
 
 
 }

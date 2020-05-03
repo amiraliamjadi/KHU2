@@ -4,11 +4,6 @@
 
 
     <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.CAMERA" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.WRITE_INTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.READ_INTERNAL_STORAGE" />
 
     <application
         android:allowBackup="true"
@@ -19,15 +14,9 @@
         android:usesCleartextTraffic="true"
         android:theme="@style/AppTheme" >
         <activity android:name=".GroupChatActivity"/>
-        <activity android:name=".GroupChatActivity2"/>
         <activity android:name=".ChannelAdminActivity"/>
-        <activity android:name=".ChannelAdminActivity2"/>
-        <activity android:name=".ChannelActivity"/>
-        <activity android:name=".UploadImageActivity"/>
-        <activity android:name=".ImageActivity"/>
-        <activity android:name=".PdfActivity"/>
-        <activity android:name=".VideoActivity"/>
-        <activity android:name=".ChannelActivity2">
+        <activity android:name=".MainMenuActivity" android:theme="@style/AppTheme.NoActionBar" />
+        <activity android:name=".ChannelActivity">
 
         </activity>
         <activity android:name=".MainActivity" >
@@ -37,17 +26,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-
-        <provider
-            android:name="android.support.v4.content.FileProvider"
-            android:authorities="${applicationId}.provider"
-            android:exported="false"
-            android:grantUriPermissions="true">
-            <meta-data
-                android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/provider_paths"/>
-        </provider>
 
 
     </application>

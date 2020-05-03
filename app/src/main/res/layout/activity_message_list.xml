@@ -16,6 +16,16 @@
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <ProgressBar
+        android:id="@+id/in_chat_menu_progress_bar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"/>
+
     <!-- A horizontal line between the chatbox and RecyclerView -->
     <View
         android:id="@+id/line_chatbox_andrecycelerview"
@@ -38,17 +48,6 @@
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintLeft_toLeftOf="parent">
 
-
-        <Button
-            android:id="@+id/button_chatbox_file"
-            android:text="File"
-            android:textSize="14dp"
-            android:background="?attr/selectableItemBackground"
-            android:clickable="true"
-            android:layout_width="64dp"
-            android:layout_height="48dp"
-            android:gravity="center"
-            android:layout_gravity="bottom" />
 
         <EditText
             android:id="@+id/edittext_chatbox"

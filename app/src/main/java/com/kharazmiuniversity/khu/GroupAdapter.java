@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,43 +30,6 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder>
     private Context mContext;
 
     public static String objectId;
-
-    public static List<GroupMessage> messageList;
-    public static List<ChannelMessage> messageListChannel;
-
-
-
-    KhuAPI.GroupMessageCallback groupMessageCallback = new KhuAPI.GroupMessageCallback() {
-        @Override
-        public void onResponse(List<GroupMessage> groupMessageList)
-        {
-            messageList = groupMessageList;
-        }
-
-        @Override
-        public void onFailure(String cause)
-        {
-
-        }
-    };
-
-
-    KhuAPI.ChannelMessageCallback channelMessageCallback = new KhuAPI.ChannelMessageCallback() {
-        @Override
-        public void onResponse(List<ChannelMessage> channelMessageList)
-        {
-            messageListChannel = channelMessageList;
-        }
-
-        @Override
-        public void onFailure(String cause)
-        {
-
-        }
-    };
-
-
-
 
 
 
@@ -109,15 +71,7 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder>
                 {
                     objectId = holder.id;
 
-                    GroupMessageController groupMessageController = new GroupMessageController(groupMessageCallback);
-                    RequestGroupMessage requestGroupMessage = new RequestGroupMessage();
-
-                    requestGroupMessage.setGroupId(objectId);
-
-                    groupMessageController.start(requestGroupMessage);
-
-
-                    Intent groupChatIntent = new Intent(mContext,GroupChatActivity2.class);
+                    Intent groupChatIntent = new Intent(mContext, GroupChatActivity.class);
 
                     mContext.startActivity(groupChatIntent);
 
@@ -142,16 +96,7 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder>
 
 
 
-                        ChannelMessageController channelMessageController = new ChannelMessageController(channelMessageCallback);
-                        RequestChannelMessage requestChannelMessage = new RequestChannelMessage();
-
-                        requestChannelMessage.setChannelId(objectId);
-
-                        channelMessageController.start(requestChannelMessage);
-
-
-
-                        Intent channelAdminIntent = new Intent(mContext,ChannelAdminActivity2.class);
+                        Intent channelAdminIntent = new Intent(mContext, ChannelAdminActivity.class);
 
                         mContext.startActivity(channelAdminIntent);
 
@@ -167,18 +112,7 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder>
                         objectId = holder.id;
 
 
-
-                        ChannelMessageController channelMessageController = new ChannelMessageController(channelMessageCallback);
-                        RequestChannelMessage requestChannelMessage = new RequestChannelMessage();
-
-                        requestChannelMessage.setChannelId(objectId);
-
-                        channelMessageController.start(requestChannelMessage);
-
-
-
-
-                        Intent channelIntent = new Intent(mContext,ChannelActivity2.class);
+                        Intent channelIntent = new Intent(mContext, ChannelActivity.class);
 
                         mContext.startActivity(channelIntent);
 

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_example1"
+            android:icon="@drawable/ic_nav_example"
+            android:title="example 1" />
+        <item
+            android:id="@+id/nav_example2"
+            android:icon="@drawable/ic_nav_example"
+            android:title="example 2" />
+        <item
+            android:id="@+id/nav_example3"
+            android:icon="@drawable/ic_nav_example"
+            android:title="example 3" />
+    </group>
+
+    <item android:title="action section">
+        <menu>
+            <item
+                android:id="@+id/nav_example4"
+                android:icon="@drawable/ic_nav_example"
+                android:title="example 4" />
+            <item
+                android:id="@+id/nav_example5"
+                android:icon="@drawable/ic_nav_example"
+                android:title="example 5" />
+        </menu>
+    </item>
+
+
+</menu>

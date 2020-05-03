@@ -23,7 +23,7 @@ public class MainActivity extends AppCompatActivity {
 
         } else {
 
-            openMainMenuFragment();
+            openMainMenuActivity();
         }
 
 
@@ -40,13 +40,11 @@ public class MainActivity extends AppCompatActivity {
                 .commit();
     }
 
-    private void openMainMenuFragment()
+    private void openMainMenuActivity()
     {
-        MainMenuFragment mainMenuFragment = new MainMenuFragment();
+        Intent mainMenuIntent = new Intent(this, MainMenuActivity.class);
 
-        getSupportFragmentManager().beginTransaction()
-                .add(R.id.fragment_container, mainMenuFragment)
-                .commit();
+        this.startActivity(mainMenuIntent);
     }
 
 
@@ -81,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
 
 
             // layout e main menu boodan ra namayesh bede
-            openMainMenuFragment();
+            openMainMenuActivity();
         }
     };
 

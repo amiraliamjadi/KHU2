@@ -12,23 +12,16 @@ import com.kharazmiuniversity.khu.models.ObjectsResponse;
 import com.kharazmiuniversity.khu.models.RequestChannelMessage;
 import com.kharazmiuniversity.khu.models.RequestGroupMessage;
 import com.kharazmiuniversity.khu.models.Token;
-import com.kharazmiuniversity.khu.models.UploadImageResponse;
 import com.kharazmiuniversity.khu.models.User;
 
 import java.util.List;
-import java.util.Map;
-
-import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
-import retrofit2.http.Header;
-import retrofit2.http.Multipart;
 import retrofit2.http.POST;
-import retrofit2.http.PartMap;
 
 public interface KhuAPI
 {
-    String BASE_URL = "http://192.168.1.106";
+    String BASE_URL = "http://10.0.2.2";
 
 
 
@@ -63,15 +56,6 @@ public interface KhuAPI
 
 
 
-    @Multipart
-    @POST("khu_backend-master/images/upload_image.php")
-    Call<UploadImageResponse> upload(
-            @Header("Authorization") String authorization,
-            @PartMap Map<String, RequestBody> map
-    );
-
-
-
     interface LoginUserCallback
     {
         void onResponse(boolean successful , ErrorResponse errorResponse, Token token );
@@ -89,14 +73,14 @@ public interface KhuAPI
 
     interface GroupMessageCallback
     {
-        void onResponse(List<GroupMessage> groupMessageList);
+        void onResponse(List<GroupMessage> groupMessageList , boolean isMessageAvailable);
 
         void onFailure( String cause);
     }
 
     interface ChannelMessageCallback
     {
-        void onResponse(List<ChannelMessage> channelMessageList);
+        void onResponse(List<ChannelMessage> channelMessageList, boolean isMessageAvailable);
 
         void onFailure( String cause);
     }

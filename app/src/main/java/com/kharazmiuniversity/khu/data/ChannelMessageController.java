@@ -5,6 +5,8 @@ import com.kharazmiuniversity.khu.models.GroupMessageResponse;
 import com.kharazmiuniversity.khu.models.RequestChannelMessage;
 import com.kharazmiuniversity.khu.models.RequestGroupMessage;
 
+import java.util.ArrayList;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -35,12 +37,12 @@ public class ChannelMessageController
             {
                 if (response.isSuccessful())
                 {
-                    channelMessageCallback.onResponse(response.body().getChannelMessages());
+                    channelMessageCallback.onResponse(response.body().getChannelMessages() , true);
 
 
                 }
                 else {
-
+                    channelMessageCallback.onResponse(new ArrayList<>(), false);
                 }
             }
 

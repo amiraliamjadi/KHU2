@@ -1,6 +1,5 @@
 package com.kharazmiuniversity.khu;
 
-
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -12,8 +11,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
 
-import com.kharazmiuniversity.khu.data.ObjectsController;
 import com.kharazmiuniversity.khu.data.KhuAPI;
+import com.kharazmiuniversity.khu.data.ObjectsController;
 import com.kharazmiuniversity.khu.models.Channel;
 import com.kharazmiuniversity.khu.models.GetObject;
 import com.kharazmiuniversity.khu.models.Group;
@@ -23,15 +22,17 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-
-public class MainMenuFragment extends Fragment
+public class MainMenuDrawerBodyFragment extends Fragment
 {
 
-   private RecyclerView objects;
-   private List<Group> groupList = new ArrayList<>();
-   private List<Channel> channelList = new ArrayList<>();
-   private GroupAdapter groupAdapter;
-   private ProgressBar progressBar;
+
+    private RecyclerView objects;
+    private List<Group> groupList = new ArrayList<>();
+    private List<Channel> channelList = new ArrayList<>();
+    private GroupAdapter groupAdapter;
+
+    private ProgressBar progressBar;
+
 
     // marboot be gereftan e groups ha
     KhuAPI.getObjectsCallback objectsCallback = new KhuAPI.getObjectsCallback() {
@@ -65,8 +66,6 @@ public class MainMenuFragment extends Fragment
             channelList.addAll(inputListChannel);
             groupAdapter.notifyDataSetChanged();
 
-            System.out.println(objects);
-
         }
 
         @Override
@@ -75,12 +74,12 @@ public class MainMenuFragment extends Fragment
         }
     };
 
-    @Nullable
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_main_menu , container ,false);
 
 
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        // Inflate the layout for this fragment
+        return inflater.inflate(R.layout.fragment_navigation_drawer, container, false);
     }
 
 
@@ -105,19 +104,25 @@ public class MainMenuFragment extends Fragment
 
     }
 
+
+
     private void findViews(View view)
     {
         objects = view.findViewById(R.id.objects);
         progressBar = view.findViewById(R.id.menu_progress_bar);
+
     }
 
     private void initObjectList()
     {
-        groupAdapter = new GroupAdapter(groupList ,channelList, getContext());
+        groupAdapter = new GroupAdapter(groupList ,channelList, getActivity());
         objects.setLayoutManager(new LinearLayoutManager(getActivity()));
         objects.setAdapter(groupAdapter);
 
 
     }
+
+
+
 
 }

@@ -5,6 +5,8 @@ import android.util.Log;
 import com.kharazmiuniversity.khu.models.GroupMessageResponse;
 import com.kharazmiuniversity.khu.models.RequestGroupMessage;
 
+import java.util.ArrayList;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -35,12 +37,12 @@ public class GroupMessageController
             {
                 if (response.isSuccessful())
                 {
-                   groupMessageCallback.onResponse(response.body().getGroupMessages());
+                   groupMessageCallback.onResponse(response.body().getGroupMessages() , true);
 
 
                 }
                 else {
-
+                    groupMessageCallback.onResponse(new ArrayList<>(), false);
                 }
             }
 

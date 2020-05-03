@@ -3,13 +3,17 @@ package com.kharazmiuniversity.khu;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.BaseAdapter;
-import android.widget.EditText;
-import android.widget.ListView;
-import android.widget.TextView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
+
+import com.google.gson.Gson;
+import com.kharazmiuniversity.khu.data.ChannelMessageController;
+import com.kharazmiuniversity.khu.data.KhuAPI;
+import com.kharazmiuniversity.khu.models.ChannelMessage;
+import com.kharazmiuniversity.khu.models.RequestChannelMessage;
 
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
@@ -23,11 +27,63 @@ import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.WebSocket;
 import okhttp3.WebSocketListener;
+import okio.ByteString;
 
 public class ChannelActivity extends AppCompatActivity
 {
+    private RecyclerView mMessageRecycler;
+    public ChannelMessageAdapter mMessageAdapter;
+
+
+    public List<ChannelMessage> messageListChannel = new ArrayList<>();
+
+    private ProgressBar progressBar;
+
+
+
     private WebSocket webSocket;
-    private ChannelActivity.MessageAdapter messageAdapter;
+
+
+
+
+
+    KhuAPI.ChannelMessageCallback channelMessageCallback = new KhuAPI.ChannelMessageCallback() {
+        @Override
+        public void onResponse(List<ChannelMessage> channelMessageList, boolean isMessageAvailable)
+        {
+            if (isMessageAvailable)
+            {
+                if (progressBar.isShown())
+                {
+                    progressBar.setVisibility(View.INVISIBLE);
+                }
+
+
+                messageListChannel.clear();
+
+                messageListChannel.addAll(channelMessageList);
+                mMessageAdapter.notifyDataSetChanged();
+            }
+            else
+            {
+                if (progressBar.isShown())
+                {
+                    progressBar.setVisibility(View.INVISIBLE);
+                }
+
+                Toast.makeText(getApplicationContext(),"no message here",Toast.LENGTH_SHORT).show();
+
+            }
+        }
+
+        @Override
+        public void onFailure(String cause)
+        {
+
+        }
+    };
+
+
 
 
     @Override
@@ -37,13 +93,49 @@ public class ChannelActivity extends AppCompatActivity
         webSocket.cancel();
     }
 
+
+
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+
+
+        mMessageRecycler = (RecyclerView) findViewById(R.id.reyclerview_message_list);
+        mMessageAdapter = new ChannelMessageAdapter(this, messageListChannel);
+        mMessageRecycler.setAdapter(mMessageAdapter);
+        mMessageRecycler.setLayoutManager(new LinearLayoutManager(this));
+
+
+        progressBar.setVisibility(View.VISIBLE);
+
+
+        ChannelMessageController channelMessageController = new ChannelMessageController(channelMessageCallback);
+        RequestChannelMessage requestChannelMessage = new RequestChannelMessage();
+
+        requestChannelMessage.setChannelId(GroupAdapter.objectId);
+
+        channelMessageController.start(requestChannelMessage);
+
+
+    }
+
+
+
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_channel);
+        setContentView(R.layout.activity_message_list_channel);
 
 
-        ListView messageList = findViewById(R.id.message_list_channel);
+
+        progressBar = findViewById(R.id.in_chat_menu_progress_bar);
+
+
+        //
+
 
 
         instantiateWebsocket();
@@ -63,13 +155,10 @@ public class ChannelActivity extends AppCompatActivity
 
 
 
-
-        messageAdapter = new ChannelActivity.MessageAdapter();
-        messageList.setAdapter(messageAdapter);
-
-
-
     }
+
+
+
 
     private void instantiateWebsocket()
     {
@@ -86,6 +175,12 @@ public class ChannelActivity extends AppCompatActivity
         public SocketListener(ChannelActivity channelActivity)
         {
             this.channelActivity = channelActivity;
+        }
+
+
+        @Override
+        public void onMessage(@NotNull WebSocket webSocket, @NotNull ByteString bytes) {
+            super.onMessage(webSocket, bytes);
         }
 
         @Override
@@ -112,22 +207,13 @@ public class ChannelActivity extends AppCompatActivity
                 @Override
                 public void run()
                 {
-                    JSONObject jsonObject = new JSONObject();
-                    try
-                    {
 
-                        jsonObject.put("message", text);
-                        jsonObject.put("byServer",true);
+                    // add received items to recycler
 
+                    Gson gson = new Gson();
+                    ChannelMessage channelMessage = gson.fromJson(text,ChannelMessage.class);
 
-                        messageAdapter.addItem(jsonObject);
-
-                    }
-                    catch (JSONException e)
-                    {
-                        e.printStackTrace();
-                    }
-
+                    mMessageAdapter.insertSent(channelMessage);
 
                 }
             });
@@ -150,71 +236,15 @@ public class ChannelActivity extends AppCompatActivity
     }
 
 
-    public class MessageAdapter extends BaseAdapter
-    {
-
-        List<JSONObject> messagesList = new ArrayList<>();
-
-        @Override
-        public int getCount() {
-            return messagesList.size();
-        }
-
-        @Override
-        public Object getItem(int position) {
-            return messagesList.get(position);
-        }
-
-        @Override
-        public long getItemId(int position) {
-            return position;
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent)
-        {
-            if (convertView == null)
-            {
-                convertView = getLayoutInflater().inflate(R.layout.message_list_item,parent,false );
-            }
 
 
-            TextView sentMessage = convertView.findViewById(R.id.sent_message);
-            TextView recievedMessage = convertView.findViewById(R.id.recieved_message);
-
-            JSONObject item = messagesList.get(position);
-
-            try
-            {
-                if (item.getBoolean("byServer"))
-                {
-                    recievedMessage.setVisibility(View.VISIBLE);
-                    recievedMessage.setText(item.getString("message"));
-                    sentMessage.setVisibility(View.INVISIBLE);
-                }
-                else
-                {
-                    sentMessage.setVisibility(View.VISIBLE);
-                    sentMessage.setText(item.getString("message"));
-                    recievedMessage.setVisibility(View.INVISIBLE);
-                }
-
-            }
-            catch (JSONException e)
-            {
-                e.printStackTrace();
-            }
-
-            return convertView;
-
-        }
-
-        private void addItem (JSONObject item)
-        {
-            messagesList.add(item);
-            notifyDataSetChanged();
-        }
 
 
-    }
+
+
+
+
+
+
+
 }
